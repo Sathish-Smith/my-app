@@ -1,6 +1,6 @@
 node{
    stage('SCM Checkout'){
-     git 'https://github.com/damodaranj/my-app.git'
+     git 'https://github.com/Sathish-Smith/my-app.git'
    }
    stage('Compile-Package'){
 
@@ -8,34 +8,40 @@ node{
       sh "${mvnHome}/bin/mvn clean package"
 	  sh 'mv target/myweb*.war target/newapp.war'
    }
+   
    stage('SonarQube Analysis') {
 	        def mvnHome =  tool name: 'maven3', type: 'maven'
 	        withSonarQubeEnv('sonar') { 
 	          sh "${mvnHome}/bin/mvn sonar:sonar"
 	        }
 	    }
+   
    stage('Build Docker Imager'){
-   sh 'docker build -t saidamo/myweb:0.0.2 .'
+   sh 'docker build -t sathishsmith/myweb:0.0.2 .'
    }
+   
    stage('Docker Image Push'){
-   withCredentials([string(credentialsId: 'dockerPass', variable: 'dockerPassword')]) {
-   sh "docker login -u saidamo -p ${dockerPassword}"
+   withCredentials([string(credentialsId: 'Jenkins', variable: 'passwordText')]) {
+   sh "docker login -u sathishsmith -p ${passwordText}"
     }
-   sh 'docker push saidamo/myweb:0.0.2'
+   sh 'docker push sathishsmith/myweb:0.0.2'
    }
+   
    stage('Nexus Image Push'){
-   sh "docker login -u admin -p admin123 3.110.123.32:8083"
-   sh "docker tag saidamo/myweb:0.0.2 3.110.123.32:8083/damo:1.0.0"
-   sh 'docker push 3.110.123.32:8083/damo:1.0.0'
-   }
+   sh "docker login -u admin -p admin123 13.232.133.79:8003"
+   sh "docker tag sathishsmith/myweb:0.0.2 13.232.133.79:8003/smith:1.0.0"
+   sh 'docker push 13.232.133.79:8003/smith:1.0.0'
+   }	
+
    stage('Remove Previous Container'){
 	try{
-		sh 'docker rm -f tomcattest'
+		sh 'docker rm -f tomcattest5'
 	}catch(error){
 		//  do nothing if there is an exception
 	}
+   
    stage('Docker deployment'){
-   sh 'docker run -d -p 8090:8080 --name tomcattest saidamo/myweb:0.0.2' 
+   sh 'docker run -d -p 8030:8080 --name tomcattest5 sathishsmith/myweb:0.0.2' 
    }
-}
+  }
 }
